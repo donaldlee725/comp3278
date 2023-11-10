@@ -47,6 +47,13 @@ INSERT INTO Student VALUES (1, "Donald", "dlee725@connect.hku.hk");
 /*!40000 ALTER TABLE Student ENABLE KEYS */;
 UNLOCK TABLES;
 
+CREATE TABLE Faces (
+  `face_id` VARCHAR(255) NOT NULL,
+  `student_id` VARCHAR(255) NOT NULL
+  PRIMARY KEY (face_id)
+  FOREIGN KEY (student_id) REFERENCES Student(student_id)
+)
+
 CREATE TABLE LoginHistory (
   `student_id` VARCHAR(255) NOT NULL, 
   `login_datetime` DATETIME(3) NOT NULL, 
@@ -58,6 +65,9 @@ CREATE TABLE LoginHistory (
 CREATE TABLE Courses (
   `course_id` VARCHAR(255) NOT NULL, 
   `course_name` VARCHAR(255) NOT NULL, 
+  `course_message` VARCHAR(255),
+  `instructor_name` VARCHAR(255),
+  `instructor_email` VARCHAR(255),
   `instructor_message` VARCHAR(255),
   PRIMARY KEY (course_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -74,7 +84,6 @@ CREATE TABLE ZoomLinks (
   `zoom_id` INT NOT NULL,
   `course_id` VARCHAR(255) NOT NULL,
   `zoom_link` VARCHAR(255) NOT NULL,
-  `meeting_datetime` DATETIME(6) NOT NULL,
   PRIMARY KEY (zoom_id),
   FOREIGN KEY (course_id) REFERENCES Courses(course_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -83,8 +92,8 @@ CREATE TABLE CourseMaterials (
   `material_id` INT NOT NULL,
   `course_id` VARCHAR(255) NOT NULL,
   `note_title` VARCHAR(255) NOT NULL,
-  `note_description` VARCHAR(255),
   `note_file` VARCHAR(255),
+  `note_date` DATE NOT NULL,
   PRIMARY KEY (material_id),
   FOREIGN KEY (course_id) REFERENCES Courses(course_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

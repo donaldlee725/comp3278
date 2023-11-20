@@ -42,6 +42,32 @@ CREATE TABLE Student (
   PRIMARY KEY (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+
+CREATE TABLE Instructor (
+  `dept_id` VARCHAR(10) NOT NULL,
+  `course_id` VARCHAR(255) NOT NULL,
+  `instructor_id` VARCHAR(255) NOT NULL, 
+  `name` VARCHAR(255) NOT NULL, 
+  `email` VARCHAR(255) NOT NULL,
+  `office_location` VARCHAR(30) NOT NULL,
+  `title` VARCHAR(5) NOT NULL,
+  `office_hour_start` DATETIME(3) NOT NULL,
+  `office_hour_end` DATETIME(3) NOT NULL,
+  `office_hour_weekday` VARCHAR(10) NOT NULL,
+  `instructor_meesage` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (instructor_id)
+  FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+  FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE Department (
+  `dept_id` VARCHAR(10) NOT NULL,
+  `dept_name` VARCHAR(50) NOT NULL,
+  PRIMARY KEY(dept_id)
+);
+
+
 CREATE TABLE Faces (
   `student_id` VARCHAR(255) NOT NULL,
   `face_id` VARCHAR(255) NOT NULL,
@@ -60,11 +86,10 @@ CREATE TABLE Courses (
   `course_id` VARCHAR(255) NOT NULL, 
   `course_name` VARCHAR(255) NOT NULL, 
   `course_message` VARCHAR(255),
-  `instructor_name` VARCHAR(255),
-  `instructor_email` VARCHAR(255),
-  `instructor_message` VARCHAR(255),
+  `dept_id` VARCHAR(10) NOT NULL,
   `zoom_link` VARCHAR(255),
   PRIMARY KEY (course_id)
+  FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE CourseRegistered (

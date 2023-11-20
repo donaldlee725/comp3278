@@ -56,38 +56,22 @@ def check():
         student_id = request.args.get('student_id')
 
         # Check student's courses
-        select = """SELECT A.course_id                      
+        select = """SELECT A.course_id
                     FROM CourseRegistered AS A                      
                     LEFT JOIN Classroom AS B                      
                     ON A.course_id = B.course_id                     
-                    WHERE A.student_id = '%s' AND B.dayofweek = %s AND NOW() BETWEEN B.startdate AND B.enddate AND TIMESTAMPDIFF(MINUTE, B.starttime, NOW()) <= 60                      
+                    WHERE A.student_id = '%s' AND B.dayofweek = %s AND NOW() BETWEEN B.startdate AND B.enddate AND ABS(TIMESTAMPDIFF(MINUTE, B.starttime, NOW())) <= 60                      
                     ORDER BY B.dayofweek ASC, B.starttime ASC""" % (student_id, datetime.now().weekday())
         execute = cursor.execute(select)
         student_course_id = cursor.fetchone()
+        print(student_course_id)
 
         if student_course_id == None:
-            return None
+            return jsonify({
+                "message": "No Data Fatched"
+            })
 
-<<<<<<< Updated upstream
-        select = """SELECT E.course_id, E.course_name, E.starttime, E.endtime, E.classroom_name, E.zoom_link, E.instructor_message, F.file_links
-                    FROM (
-                        SELECT A.course_id, A.course_name, B.starttime, B.endtime, B.classroom_name, A.zoom_link, A.instructor_message
-                        FROM Courses A
-                        JOIN Classroom B ON A.course_id = B.course_id
-                        WHERE A.course_id = '%s'
-                    ) AS E
-                    LEFT JOIN (
-                        SELECT D.course_id, GROUP_CONCAT(D.note_file SEPARATOR '; ') AS file_links
-                        FROM CourseMaterials D
-                        WHERE D.note_date = DATE(NOW())
-                        GROUP BY D.course_id
-                    ) AS F ON E.course_id = F.course_id""" % (student_course_id[0])
-        execute = cursor.execute(select)
-        result = cursor.fetchall()
-        course_id, course_name, starttime, endtime, classroom_name, zoom_link, instructor_message, file_links = result[0]
-=======
         select = """
-                
                 SELECT A.course_id, A.course_name, A.course_message, A.zoom_link, B.starttime, B.endtime, B.classroom_name, C.file_links, I.dept_id, I.name, I.email, I.office_location, I.title, I.office_hour_start, I.office_hour_end, I.office_hour_weekday, I.instructor_message
                 FROM (
                     SELECT A.course_id, A.course_name, A.course_message, A.zoom_link, A.instructor_id
@@ -97,7 +81,7 @@ def check():
                 LEFT JOIN (
                     SELECT B.course_id,  B.starttime, B.endtime, B.classroom_name
                     FROM Classroom AS B
-                    WHERE B.course_id = '%s' AND B.dayofweek = %s AND NOW() BETWEEN B.startdate AND B.enddate AND TIMESTAMPDIFF(MINUTE, B.starttime, NOW()) <= 60
+                    WHERE B.course_id = '%s' AND B.dayofweek = %s AND NOW() BETWEEN B.startdate AND B.enddate AND ABS(TIMESTAMPDIFF(MINUTE, B.starttime, NOW())) <= 60
                 ) AS B ON A.course_id = B.course_id
                 LEFT JOIN(
                     SELECT C.course_id, GROUP_CONCAT(C.note_file SEPARATOR '; ') AS file_links
@@ -114,9 +98,8 @@ def check():
         execute = cursor.execute(select)
         result = cursor.fetchall()
         print(result)
-        course_id, course_name, course_message, zoom_link, starttime, endtime, classroom_name, file_links, dept_id, name, email, \
-            office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_meesage = result[0]
->>>>>>> Stashed changes
+        course_id, course_name, course_message, zoom_link, starttime, endtime, classroom_name, file_links, dept_id, \
+            name, email, office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_message= result[0]
 
         starttime = str(starttime)
         endtime = str(endtime)
@@ -124,20 +107,30 @@ def check():
         response = {
             'course_id': course_id,
             'course_name': course_name,
+            'course_message': course_message,
+            'zoom_link': zoom_link,
             'starttime': starttime,
             'endtime': endtime,
             'classroom_name': classroom_name,
-            'zoom_link': zoom_link,
-            'instructor_message': instructor_message,
-            'file_links': file_links
+            'file_links': file_links,
+            'name': name,
+            'email': email,
+            'office_location': office_location,
+            'title': title,
+            'office_hour_start': office_hour_start,
+            'office_hour_end': office_hour_end,
+            'office_hour_weekday': office_hour_weekday,
+            'instructor_message': instructor_message
         }
 
         return jsonify(response)
     except Exception as e:
         print(e)
-    finally:
         cursor.close() 
-        conn.close()    
+        conn.close()
+        return jsonify({
+            "message": "%s Error" %(e)
+        })
     
 
 @app.route('/timetable', methods=['GET'])

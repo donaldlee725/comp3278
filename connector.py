@@ -1,5 +1,5 @@
 from datetime import datetime
-from faces import face_id
+# from faces import face_id
 from app import app, mysql
 from flask import Flask, jsonify, flash, request
 from flaskext.mysql import MySQL
@@ -39,7 +39,7 @@ def login():
         print(e)
     finally:
         cursor.close() 
-        conn.close()    
+        conn.close()
     
 
     
@@ -60,47 +60,71 @@ def check():
                     ORDER BY B.dayofweek ASC, B.starttime ASC""" % (student_id, datetime.now().weekday())
         execute = cursor.execute(select)
         student_course_id = cursor.fetchone()
+        print(student_course_id[0])
 
-        if student_course_id == None:
-            return None
+        if student_course_id is None:
+            cursor.close() 
+            conn.close()
+            return jsonify({
+                "message": "No class fetched"
+            })
 
-        select = """SELECT E.course_id, E.course_name, E.starttime, E.endtime, E.classroom_name, E.zoom_link, E.instructor_message, F.file_links
-                    FROM (
-                        SELECT A.course_id, A.course_name, B.starttime, B.endtime, B.classroom_name, A.zoom_link, A.instructor_message
-                        FROM Courses A
-                        JOIN Classroom B ON A.course_id = B.course_id
-                        WHERE A.course_id = '%s'
-                    ) AS E
-                    LEFT JOIN (
-                        SELECT D.course_id, GROUP_CONCAT(D.note_file SEPARATOR '; ') AS file_links
-                        FROM CourseMaterials D
-                        WHERE D.note_date = DATE(NOW())
-                        GROUP BY D.course_id
-                    ) AS F ON E.course_id = F.course_id""" % (student_course_id[0])
+        select = """
+                SELECT E.course_id, E.course_name, E.starttime, E.endtime, E.classroom_name, E.zoom_link, E.course_message, F.file_links, I.dept_id, I.course_id, I.name, I.email, I.office_location, I.title, I.office_hour_start, I.office_hour_end, I.office_hour_weekday, I.instructor_meesage
+                FROM (
+                    SELECT A.course_id, A.course_name, A.course_message, B.starttime, B.endtime, B.classroom_name, A.zoom_link
+                    FROM Courses A
+                    JOIN Classroom B ON A.course_id = B.course_id
+                    WHERE A.course_id = '%s'
+                ) AS E
+                LEFT JOIN (
+                    SELECT D.course_id, GROUP_CONCAT(D.note_file SEPARATOR '; ') AS file_links
+                    FROM CourseMaterials D
+                    WHERE D.note_date = DATE(NOW())
+                    GROUP BY D.course_id
+                ) AS F ON E.course_id = F.course_id
+                LEFT JOIN (
+                    SELECT *
+                    FROM Instructor I
+                ) AS 
+                """ % (student_course_id[0])
+        
         execute = cursor.execute(select)
         result = cursor.fetchall()
-        course_id, course_name, starttime, endtime, classroom_name, zoom_link, instructor_message, file_links = result[0]
+        course_id, course_name, starttime, endtime, classroom_name, zoom_link, course_message, file_links, course_id, name, email, \
+            office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_meesage = result[0]
 
         starttime = str(starttime)
         endtime = str(endtime)
         
         response = {
+            "message": "Fetch Success",
             'course_id': course_id,
             'course_name': course_name,
             'starttime': starttime,
             'endtime': endtime,
             'classroom_name': classroom_name,
             'zoom_link': zoom_link,
-            'instructor_message': instructor_message,
-            'file_links': file_links
+            "course_message": course_message,
+            'file_links': file_links,
+            'instructor_name': name,
+            'instructor_email': email,
+            'office_location': office_location, 
+            'title': title, 
+            'office_hour_start': office_hour_start, 
+            'office_hour_end': office_hour_end,
+            'office_hour_weekday': office_hour_weekday,
+            'instructor_meesage': instructor_meesage
         }
 
         return jsonify(response)
     except Exception as e:
         print(e)
-    finally:
         cursor.close() 
-        conn.close()    
+        conn.close()
+        return jsonify({
+            "message": "Fetch Failed"
+        })
     
 
 @app.route('/timetable', methods=['GET'])

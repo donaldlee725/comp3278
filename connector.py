@@ -67,6 +67,8 @@ def check():
         print(student_course_id)
 
         if student_course_id == None:
+            cursor.close() 
+            conn.close()
             return jsonify({
                 "message": "No Data Fatched"
             })

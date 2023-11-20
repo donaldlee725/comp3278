@@ -27,7 +27,6 @@ SET time_zone = "+00:00";
 --
 
 DROP TABLE IF EXISTS LoginHistory;
-DROP TABLE IF EXISTS ZoomLinks;
 DROP TABLE IF EXISTS CourseMaterials;
 DROP TABLE IF EXISTS CourseRegistered;
 DROP TABLE IF EXISTS Courses;
@@ -129,12 +128,7 @@ INSERT INTO CourseRegistered (registration_id, student_id, course_id)
 VALUES ('R001', 'S001', 'C001'),
        ('R002', 'S002', 'C001'),
        ('R003', 'S001', 'C002');
-
--- Sample data for ZoomLinks table
-INSERT INTO ZoomLinks (zoom_id, course_id, zoom_link)
-VALUES (1, 'C001', 'https://zoom.us/meeting/123456'),
-       (2, 'C002', 'https://zoom.us/meeting/654321');
-
+       
 -- Sample data for CourseMaterials table
 INSERT INTO CourseMaterials (material_id, course_id, note_title, note_file, note_date)
 VALUES (1, 'C001', 'Lecture 1', 'lecture1.pdf', '2023-11-11'),
@@ -142,6 +136,6 @@ VALUES (1, 'C001', 'Lecture 1', 'lecture1.pdf', '2023-11-11'),
        (3, 'C002', 'Introduction', 'intro.pdf', '2023-11-02');
 
 INSERT INTO Classroom (classroom_id, classroom_name, course_id, startdate, enddate, dayofweek, starttime, endtime)
-VALUES ('CL001', 'Room 101', 'C001', '2023-11-01', '2024-01-15', 5, '15:00:00', '17:00:00'),
+VALUES ('CL001', 'Room 101', 'C001', '2023-11-01', '2024-01-15', 4, '15:00:00', '17:00:00'),
        ('CL002', 'Room 102', 'C001', '2023-11-01', '2024-01-15', 2, '13:00:00', '15:00:00'),
        ('CL002', 'Room 102', 'C002', '2023-11-01', '2024-01-20', 3, '14:00:00', '16:00:00');

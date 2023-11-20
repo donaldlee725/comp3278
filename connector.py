@@ -1,33 +1,9 @@
 from datetime import datetime
-# from faces import face_id
+from faces import face_id
 from app import app, mysql
 from flask import Flask, jsonify, flash, request
 from flaskext.mysql import MySQL
 
-def find_next(datetimes_str):
-
-    datetimes = [i for i in datetimes_str.split(";")]
-
-    if len(datetimes) == 1:
-        return datetimes_str
-
-    diff = 8
-
-    for i in datetimes:
-        dayofweek = i[0]
-        if datetime.now().weekday() - dayofweek > 0:
-            diff = min(diff, (datetime.now().weekday() - dayofweek))
-        elif dayofweek - datetime.now().weekday() > 0:
-            diff = min(diff, (dayofweek + 7) - datetime.now().weekday())
-        else:
-            if datetime.now() > i.split("(")[1][:8].strftime('%H:%M:%S'): # convert string to datetime
-                continue
-            else:
-                diff = 0
-
-    for i in datetimes:
-        if diff == i[0]:
-            return i
 
 # Find Student Info From Face
 @app.route('/login', methods=['GET'])
@@ -35,13 +11,15 @@ def login():
     try:
         conn = mysql.connect()
         cursor =conn.cursor()
-        face = "F001"
+        face = face_id('data/F001/F001003.jpg', 0)
+        print(face)
         select = """SELECT A.student_id, A.name, A.email
                     FROM Student AS A 
                     LEFT JOIN Faces AS B ON A.student_id = B.student_id
                     WHERE B.face_id='%s' """ % (face)
         execute = cursor.execute(select)
         student_values = cursor.fetchall()
+        print(student_values)
         student_id, student_name, student_email = student_values[0]
 
         # Insert Login Record
@@ -83,14 +61,14 @@ def check():
         execute = cursor.execute(select)
         student_course_id = cursor.fetchone()
 
-        print(student_id, student_course_id[0])
+        if student_course_id == None:
+            return None
 
         select = """SELECT E.course_id, E.course_name, E.starttime, E.endtime, E.classroom_name, E.zoom_link, E.instructor_message, F.file_links
                     FROM (
                         SELECT A.course_id, A.course_name, B.starttime, B.endtime, B.classroom_name, A.zoom_link, A.instructor_message
                         FROM Courses A
                         JOIN Classroom B ON A.course_id = B.course_id
-                        JOIN ZoomLinks C ON A.course_id = C.course_id
                         WHERE A.course_id = '%s'
                     ) AS E
                     LEFT JOIN (
@@ -103,7 +81,6 @@ def check():
         result = cursor.fetchall()
         course_id, course_name, starttime, endtime, classroom_name, zoom_link, instructor_message, file_links = result[0]
 
-        print(result[0])
         starttime = str(starttime)
         endtime = str(endtime)
         
@@ -117,10 +94,8 @@ def check():
             'instructor_message': instructor_message,
             'file_links': file_links
         }
-        if not result[0]:
-            return None
-        else:
-            return jsonify(response)
+
+        return jsonify(response)
     except Exception as e:
         print(e)
     finally:
@@ -136,30 +111,39 @@ def timetable():
         student_id = request.args.get('student_id')
         print(student_id)
         # Check student's courses
-        select = """SELECT D.course_name, D.instructor_name, D.schedule, D.classroom_name 
+        select = """SELECT A.course_id, D.course_name, D.instructor_name, D.schedule, D.classroom_name 
                     FROM CourseRegistered AS A
-                    LEFT JOIN (     
+                    LEFT JOIN (
                         SELECT B.course_id, B.course_name, B.instructor_name,
                             GROUP_CONCAT(CONCAT(C.dayofweek, ' (', C.starttime, ' - ', C.endtime, ')') SEPARATOR '; ') AS schedule,
                             C.startdate, C.enddate, C.classroom_name  
                         FROM Courses AS B
                         LEFT JOIN Classroom AS C ON B.course_id = C.course_id
                         WHERE NOW() BETWEEN C.startdate AND C.enddate 
-                        GROUP BY B.course_id, C.startdate, C.enddate, C.classroom_name
+                        GROUP BY B.course_id, B.course_name, B.instructor_name, C.dayofweek, C.starttime, C.endtime, C.startdate, C.enddate, C.classroom_name
+                        ORDER BY ABS(C.dayofweek - %s)
                     ) AS D ON A.course_id = D.course_id 
                     WHERE A.student_id = '%s'
-                """ % (student_id)
+                """ % (datetime.now().weekday(), student_id)
         execute = cursor.execute(select)
         timetable = cursor.fetchall()
 
         print(timetable)
 
+        present_courses = set()
+        final_timetable = []
+
+        for row in timetable:
+            if row[0] not in present_courses:
+                present_courses.add(row[0])
+                final_timetable.append(row) 
+
         response = {
-            "total_courses" : len(timetable),
-            "course_names" : [i[0] for i in timetable],
-            "instructor_name" : [i[1] for i in timetable],
-            "next_class" : [i[2] for i in timetable],
-            "classroom_name" : [i[3] for i in timetable]
+            "total_courses" : len(final_timetable),
+            "course_names" : [i[1] for i in final_timetable],
+            "instructor_name" : [i[2] for i in final_timetable],
+            "next_class" : [i[3] for i in final_timetable],
+            "classroom_name" : [i[4] for i in final_timetable]
         }
 
         return response

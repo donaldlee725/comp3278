@@ -68,6 +68,7 @@ def check():
         if student_course_id == None:
             return None
 
+<<<<<<< Updated upstream
         select = """SELECT E.course_id, E.course_name, E.starttime, E.endtime, E.classroom_name, E.zoom_link, E.instructor_message, F.file_links
                     FROM (
                         SELECT A.course_id, A.course_name, B.starttime, B.endtime, B.classroom_name, A.zoom_link, A.instructor_message
@@ -84,6 +85,38 @@ def check():
         execute = cursor.execute(select)
         result = cursor.fetchall()
         course_id, course_name, starttime, endtime, classroom_name, zoom_link, instructor_message, file_links = result[0]
+=======
+        select = """
+                
+                SELECT A.course_id, A.course_name, A.course_message, A.zoom_link, B.starttime, B.endtime, B.classroom_name, C.file_links, I.dept_id, I.name, I.email, I.office_location, I.title, I.office_hour_start, I.office_hour_end, I.office_hour_weekday, I.instructor_message
+                FROM (
+                    SELECT A.course_id, A.course_name, A.course_message, A.zoom_link, A.instructor_id
+                    FROM Courses AS A
+                    WHERE A.course_id = '%s'
+                ) AS A
+                LEFT JOIN (
+                    SELECT B.course_id,  B.starttime, B.endtime, B.classroom_name
+                    FROM Classroom AS B
+                    WHERE B.course_id = '%s' AND B.dayofweek = %s AND NOW() BETWEEN B.startdate AND B.enddate AND TIMESTAMPDIFF(MINUTE, B.starttime, NOW()) <= 60
+                ) AS B ON A.course_id = B.course_id
+                LEFT JOIN(
+                    SELECT C.course_id, GROUP_CONCAT(C.note_file SEPARATOR '; ') AS file_links
+                    FROM CourseMaterials AS C
+                    WHERE C.note_date = DATE(NOW())
+                    GROUP BY C.course_id
+                ) AS C ON B.course_id = C.course_id
+                LEFT JOIN (
+                    SELECT *
+                    FROM Instructor I
+                ) AS I ON A.instructor_id = I.instructor_id
+                """ % (student_course_id[0], student_course_id[0], datetime.now().weekday())
+
+        execute = cursor.execute(select)
+        result = cursor.fetchall()
+        print(result)
+        course_id, course_name, course_message, zoom_link, starttime, endtime, classroom_name, file_links, dept_id, name, email, \
+            office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_meesage = result[0]
+>>>>>>> Stashed changes
 
         starttime = str(starttime)
         endtime = str(endtime)

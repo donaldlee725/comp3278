@@ -6,35 +6,39 @@ from flaskext.mysql import MySQL
 
 
 # Find Student Info From Face
-@app.route('/login', methods=['GET'])
+@app.route("/login", methods=['GET'])
 def login():
     try:
         conn = mysql.connect()
         cursor =conn.cursor()
-        face = face_id('data/F001/F001003.jpg', 0)
-        print(face)
-        select = """SELECT A.student_id, A.name, A.email
-                    FROM Student AS A 
-                    LEFT JOIN Faces AS B ON A.student_id = B.student_id
-                    WHERE B.face_id='%s' """ % (face)
-        execute = cursor.execute(select)
-        student_values = cursor.fetchall()
-        print(student_values)
-        student_id, student_name, student_email = student_values[0]
+        face = face_id(0)
 
-        # Insert Login Record
-        insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
-        val = (student_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), None, None)
-        cursor.execute(insert, val)
-        conn.commit()
+        if face != "Your face is not recognized":
+            select = """SELECT A.student_id, A.name, A.email
+                        FROM Student AS A 
+                        LEFT JOIN Faces AS B ON A.student_id = B.student_id
+                        WHERE B.face_id='%s' """ % (face)
+            execute = cursor.execute(select)
+            student_values = cursor.fetchall()
+            print(student_values)
+            student_id, student_name, student_email = student_values[0]
 
-        response = {
-            "student_id": student_id,
-            "student_name": student_name,
-            "student_email": student_email 
-        }
+            # Insert Login Record
+            insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
+            val = (student_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), None, None)
+            cursor.execute(insert, val)
+            conn.commit()
 
-        return jsonify(response)
+            response = {
+                "login": "Successful",
+                "student_id": student_id,
+                "student_name": student_name,
+                "student_email": student_email 
+            }
+
+            return jsonify(response)
+        else:
+            return {"login":"Failed"}
     except Exception as e:
         print(e)
     finally:
@@ -146,7 +150,7 @@ def timetable():
             "classroom_name" : [i[4] for i in final_timetable]
         }
 
-        return response
+        return jsonify(response)
 
     except Exception as e:
         print(e)
@@ -192,7 +196,7 @@ def detail():
             "notes": course_detail[7]
         }
 
-        return response
+        return jsonify(response)
     except Exception as e:
         print(e)
     finally:

@@ -65,6 +65,10 @@ CREATE TABLE Instructor (
   FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> database-fixed-branch
 CREATE TABLE Faces (
   `student_id` VARCHAR(255) NOT NULL,
   `face_id` VARCHAR(255) NOT NULL,
@@ -87,7 +91,12 @@ CREATE TABLE Courses (
   `zoom_link` VARCHAR(255),
   `instructor_id` VARCHAR(255) NOT NULL, 
   PRIMARY KEY (course_id),
+<<<<<<< HEAD
   FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
+=======
+  FOREIGN KEY (dept_id) REFERENCES Department(dept_id),
+  FOREIGN KEY (instructor_id) REFERENCES Instructor(instructor_id)
+>>>>>>> database-fixed-branch
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE CourseRegistered (
@@ -141,7 +150,10 @@ VALUES
     ('D004', 'Psychology'),
     ('D005', 'Physics');
 
+<<<<<<< HEAD
   
+=======
+>>>>>>> database-fixed-branch
 -- Insert data into the Instructor table
 INSERT INTO Instructor (dept_id, instructor_id, name, email, office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_message)
 VALUES
@@ -151,8 +163,12 @@ VALUES
     ('D002', 'I004', 'Lisa Wang', 'lisawang@hku.hk', 'Building D, Room 501', 'Prof.', '2023-11-20 13:00:00', '2023-11-20 15:00:00', 3, 'Feel free to ask questions!'),
     ('D003', 'I005', 'Michael Liu', 'michael.liu@hku.hk', 'Building E, Room 401', 'Dr.', '2023-11-20 16:30:00', '2023-11-20 18:30:00', 4, 'Reminder: Midterm exam next week.'),
     ('D004', 'I006', 'Michel Wang', 'michelwang@hku.hk', 'Building F, Room 403', 'Dr.', '2023-11-20 13:30:00', '2023-11-20 15:30:00', 4, 'Reminder: Midterm exam cancelled.'),
+<<<<<<< HEAD
     ('D005', 'I007', 'Eren Chan', 'erenchan@hku.hk', 'Building G, Room 205', 'Dr.', '2023-11-20 11:30:00', '2023-11-20 13:30:00', 4, NULL);
     
+=======
+    ('D005', 'I007', 'Eren Chan', 'erenchan@hku.hk', 'Building G, Room 205', 'Dr.', '2023-11-20 11:30:00', '2023-11-20 13:30:00', 4, NULL);   
+>>>>>>> database-fixed-branch
 
 -- Insert data into the Faces table
 INSERT INTO Faces (student_id, face_id)
@@ -276,7 +292,11 @@ VALUES
     ('C001', 'MWT 1', 'COMP3278', '2023-09-01', '2023-11-30', 0, '09:00:00', '10:00:00'),
     ('C002', 'MWT 2', 'COMP3331', '2023-09-01', '2023-11-30', 2, '09:00:00', '10:00:00'),
     ('C003', 'KK 201', 'COMP3297', '2023-09-01', '2023-11-30', 4, '09:00:00', '10:00:00'),
+<<<<<<< HEAD
     ('C004', 'KK 202', 'MATH2014', '2023-09-01', '2023-11-30', 1, '03:30:00', '04:30:00'),
+=======
+    ('C004', 'KK 202', 'MATH2014', '2023-09-01', '2023-11-30', 1, '09:00:00', '10:00:00'),
+>>>>>>> database-fixed-branch
     ('C002', 'MWT 2', 'ECON1280', '2023-09-01', '2023-11-30', 3, '09:00:00', '10:00:00'),
     ('C005', 'KB 223', 'COMP3278', '2023-09-01', '2023-11-30', 0, '11:00:00', '12:00:00'),
     ('C006', 'CYPP 1', 'COMP3331', '2023-09-01', '2023-11-30', 1, '12:00:00', '13:00:00'),

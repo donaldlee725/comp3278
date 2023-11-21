@@ -32,6 +32,8 @@ DROP TABLE IF EXISTS CourseRegistered;
 DROP TABLE IF EXISTS Courses;
 DROP TABLE IF EXISTS Classroom;
 DROP TABLE IF EXISTS Faces;
+DROP TABLE IF EXISTS Instructor;
+DROP TABLE IF EXISTS Department;
 DROP TABLE IF EXISTS Student;
 
 
@@ -42,10 +44,14 @@ CREATE TABLE Student (
   PRIMARY KEY (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+CREATE TABLE Department (
+  `dept_id` VARCHAR(10) NOT NULL,
+  `dept_name` VARCHAR(50) NOT NULL,
+  PRIMARY KEY(dept_id)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE Instructor (
   `dept_id` VARCHAR(10) NOT NULL,
-  `course_id` VARCHAR(255) NOT NULL,
   `instructor_id` VARCHAR(255) NOT NULL, 
   `name` VARCHAR(255) NOT NULL, 
   `email` VARCHAR(255) NOT NULL,
@@ -54,17 +60,10 @@ CREATE TABLE Instructor (
   `office_hour_start` DATETIME(3) NOT NULL,
   `office_hour_end` DATETIME(3) NOT NULL,
   `office_hour_weekday` VARCHAR(10) NOT NULL,
-  `instructor_meesage` VARCHAR(255) NOT NULL,
-  PRIMARY KEY (instructor_id)
-  FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+  `instructor_message` VARCHAR(255) NOT NULL,
+  PRIMARY KEY (instructor_id),
   FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE Department (
-  `dept_id` VARCHAR(10) NOT NULL,
-  `dept_name` VARCHAR(50) NOT NULL,
-  PRIMARY KEY(dept_id)
-);
 
 CREATE TABLE Faces (
   `student_id` VARCHAR(255) NOT NULL,
@@ -86,7 +85,8 @@ CREATE TABLE Courses (
   `course_message` VARCHAR(255),
   `dept_id` VARCHAR(10) NOT NULL,
   `zoom_link` VARCHAR(255),
-  PRIMARY KEY (course_id)
+  `instructor_id` VARCHAR(255) NOT NULL, 
+  PRIMARY KEY (course_id),
   FOREIGN KEY (dept_id) REFERENCES Department(dept_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -99,7 +99,7 @@ CREATE TABLE CourseRegistered (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 CREATE TABLE CourseMaterials (
-  `material_id` INT NOT NULL,
+  `material_id` VARCHAR(10) NOT NULL,
   `course_id` VARCHAR(255) NOT NULL,
   `note_title` VARCHAR(255) NOT NULL,
   `note_file` VARCHAR(255),
@@ -132,18 +132,6 @@ VALUES
     ('S004', 'Emily Wang', 'emily@connect.hku.hk'),
     ('S005', 'Michael Liu', 'michael@connect.hku.hk');
 
--- Insert data into the Instructor table
-INSERT INTO Instructor (dept_id, course_id, instructor_id, name, email, office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_message)
-VALUES
-    ('D001', 'COMP3278', 'I001', 'Ping Luo', 'pluo@cs.hku.hk', 'CB326', 'Prof.', '2023-11-20 09:00:00', '2023-11-20 11:00:00', 0, 'Welcome to the course!'),
-    ('D001', 'COMP3331', 'I002', 'Emma Johnson', 'emmajohnson@hku.hk', 'Building B, Room 201', 'Prof.', '2023-11-20 14:00:00', '2023-11-20 16:00:00', 2, 'Don''t forget to submit assignments!'),
-    ('D001', 'COMP3297', 'I003', 'David Chen', 'davidchen@hku.hk', 'Building C, Room 305', 'Dr.', '2023-11-20 10:30:00', '2023-11-20 12:30:00', 1, 'Office hours canceled on November 30th.'),
-    ('D002', 'MATH2014', 'I004', 'Lisa Wang', 'lisawang@hku.hk', 'Building D, Room 501', 'Prof.', '2023-11-20 13:00:00', '2023-11-20 15:00:00', 3, 'Feel free to ask questions!'),
-    ('D003', 'ECON1280', 'I005', 'Michael Liu', 'michael.liu@hku.hk', 'Building E, Room 401', 'Dr.', '2023-11-20 16:30:00', '2023-11-20 18:30:00', 4, 'Reminder: Midterm exam next week.');
-    ('D004', 'PSYC1001', 'I005', 'Michel Wang', 'michelwang@hku.hk', 'Building F, Room 403', 'Dr.', '2023-11-20 13:30:00', '2023-11-20 15:30:00', 4, 'Reminder: Midterm exam cancelled.');
-    ('D005', 'PHYS1250', 'I005', 'Eren Chan', 'erenchan@hku.hk', 'Building G, Room 205', 'Dr.', '2023-11-20 11:30:00', '2023-11-20 13:30:00', 4, NULL);
-    
-
 -- Insert data into the Department table
 INSERT INTO Department (dept_id, dept_name)
 VALUES
@@ -152,6 +140,19 @@ VALUES
     ('D003', 'Economics'),
     ('D004', 'Psychology'),
     ('D005', 'Physics');
+
+  
+-- Insert data into the Instructor table
+INSERT INTO Instructor (dept_id, instructor_id, name, email, office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_message)
+VALUES
+    ('D001', 'I001', 'Ping Luo', 'pluo@cs.hku.hk', 'CB326', 'Prof.', '2023-11-20 09:00:00', '2023-11-20 11:00:00', 0, 'Welcome to the course!'),
+    ('D001', 'I002', 'Emma Johnson', 'emmajohnson@hku.hk', 'Building B, Room 201', 'Prof.', '2023-11-20 14:00:00', '2023-11-20 16:00:00', 2, 'Don''t forget to submit assignments!'),
+    ('D001', 'I003', 'David Chen', 'davidchen@hku.hk', 'Building C, Room 305', 'Dr.', '2023-11-20 10:30:00', '2023-11-20 12:30:00', 1, 'Office hours canceled on November 30th.'),
+    ('D002', 'I004', 'Lisa Wang', 'lisawang@hku.hk', 'Building D, Room 501', 'Prof.', '2023-11-20 13:00:00', '2023-11-20 15:00:00', 3, 'Feel free to ask questions!'),
+    ('D003', 'I005', 'Michael Liu', 'michael.liu@hku.hk', 'Building E, Room 401', 'Dr.', '2023-11-20 16:30:00', '2023-11-20 18:30:00', 4, 'Reminder: Midterm exam next week.'),
+    ('D004', 'I006', 'Michel Wang', 'michelwang@hku.hk', 'Building F, Room 403', 'Dr.', '2023-11-20 13:30:00', '2023-11-20 15:30:00', 4, 'Reminder: Midterm exam cancelled.'),
+    ('D005', 'I007', 'Eren Chan', 'erenchan@hku.hk', 'Building G, Room 205', 'Dr.', '2023-11-20 11:30:00', '2023-11-20 13:30:00', 4, NULL);
+    
 
 -- Insert data into the Faces table
 INSERT INTO Faces (student_id, face_id)
@@ -172,15 +173,15 @@ VALUES
     ('S005', '2023-11-19 16:00:00', '2023-11-19 17:30:00', 8);
 
 -- Insert data into the Courses table
-INSERT INTO Courses (course_id, course_name, course_message, dept_id, zoom_link)
+INSERT INTO Courses (course_id, course_name, course_message, dept_id, zoom_link, instructor_id)
 VALUES
-    ('COMP3278', 'Introduction to Database Management Systems', 'Welcome to the course!', 'D001', 'zoom.us/join/C001'),
-    ('COMP3331', 'Machine Learning', 'Don''t forget to submit assignments!', 'D001', 'zoom.us/join/C003'),
-    ('COMP3297', 'Software Engineering', 'Welcome!', 'D001', 'zoom.us/join/C003'),
-    ('MATH2014', 'Multivariable Calculus', 'Feel free to ask questions!', 'D002', 'zoom.us/join/C004'),
-    ('ECON1280', 'Analysis of Economic Data', 'Reminder: Midterm exam next week.', 'D003', 'zoom.us/join/C005')
-    ('PSYC1001', 'Introduction to Psychology', 'next week come to class', 'D004', 'zoom.us/join/C006')
-    ('PHYS1250', 'Fundamental Physics', 'Don''t forget to submit assignments', 'D005', 'zoom.us/join/C007');
+    ('COMP3278', 'Introduction to Database Management Systems', 'Welcome to the course!', 'D001', 'zoom.us/join/C001', 'I001'),
+    ('COMP3331', 'Machine Learning', 'Don''t forget to submit assignments!', 'D001', 'zoom.us/join/C003', 'I002'),
+    ('COMP3297', 'Software Engineering', 'Welcome!', 'D001', 'zoom.us/join/C003', 'I003'),
+    ('MATH2014', 'Multivariable Calculus', 'Feel free to ask questions!', 'D002', 'zoom.us/join/C004', 'I004'),
+    ('ECON1280', 'Analysis of Economic Data', 'Reminder: Midterm exam next week.', 'D003', 'zoom.us/join/C005', 'I005'),
+    ('PSYC1001', 'Introduction to Psychology', 'next week come to class', 'D004', 'zoom.us/join/C006', 'I006'),
+    ('PHYS1250', 'Fundamental Physics', 'Don''t forget to submit assignments', 'D005', 'zoom.us/join/C007', 'I007');
 
 -- Insert data into the CourseRegistered table
 INSERT INTO CourseRegistered (registration_id, student_id, course_id)
@@ -275,7 +276,7 @@ VALUES
     ('C001', 'MWT 1', 'COMP3278', '2023-09-01', '2023-11-30', 0, '09:00:00', '10:00:00'),
     ('C002', 'MWT 2', 'COMP3331', '2023-09-01', '2023-11-30', 2, '09:00:00', '10:00:00'),
     ('C003', 'KK 201', 'COMP3297', '2023-09-01', '2023-11-30', 4, '09:00:00', '10:00:00'),
-    ('C004', 'KK 202', 'MATH2014', '2023-09-01', '2023-11-30', 1, '09:00:00', '10:00:00'),
+    ('C004', 'KK 202', 'MATH2014', '2023-09-01', '2023-11-30', 1, '03:30:00', '04:30:00'),
     ('C002', 'MWT 2', 'ECON1280', '2023-09-01', '2023-11-30', 3, '09:00:00', '10:00:00'),
     ('C005', 'KB 223', 'COMP3278', '2023-09-01', '2023-11-30', 0, '11:00:00', '12:00:00'),
     ('C006', 'CYPP 1', 'COMP3331', '2023-09-01', '2023-11-30', 1, '12:00:00', '13:00:00'),

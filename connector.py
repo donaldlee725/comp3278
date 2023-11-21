@@ -6,33 +6,68 @@ from flaskext.mysql import MySQL
 
 
 # Find Student Info From Face
-@app.route("/login", methods=['GET', 'POST'])
+@app.route("/login", methods=['GET'])
 def login():
     
     try:
         conn = mysql.connect()
         cursor =conn.cursor()
 
-        if request.method == 'GET':
-            face = face_id(0)
+        face = face_id(0)
 
-            if face != "Your face is not recognized":
-                select = """SELECT A.student_id, A.name, A.email
-                            FROM Student AS A 
-                            LEFT JOIN Faces AS B ON A.student_id = B.student_id
-                            WHERE B.face_id='%s' """ % (face)
-                execute = cursor.execute(select)
-                student_values = cursor.fetchall()
-                student_id, student_name, student_email = student_values[0]
-        else:
-
-            select = """ A.student_id, A.name, A.email
-                            FROM Student AS A 
-                            LEFT JOIN Faces AS B ON A.student_id = B.student_id
-                            WHERE A.email='%s' AND A.password='%s'""" % (request.form.get("username"), request.form.get("password"))
+        if face != "Your face is not recognized":
+            select = """SELECT A.student_id, A.name, A.email
+                        FROM Student AS A 
+                        LEFT JOIN Faces AS B ON A.student_id = B.student_id
+                        WHERE B.face_id='%s' """ % (face)
             execute = cursor.execute(select)
             student_values = cursor.fetchall()
             student_id, student_name, student_email = student_values[0]
+            
+            # Insert Login Record
+            insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
+            val = (student_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), None, None)
+            cursor.execute(insert, val)
+            conn.commit()
+
+            response = {
+                "login": "Successful",
+                "student_id": student_id,
+                "student_name": student_name,
+                "student_email": student_email 
+            }
+
+            return jsonify(response)
+        else:
+            return {"login":"Failed"}
+        
+    except Exception as e:
+        print(e)
+        return {"login":"Failed"}
+    finally:
+        cursor.close() 
+        conn.close()
+    
+@app.route("/login2", methods=['GET'])
+def login2():
+    
+    try:
+        conn = mysql.connect()
+        cursor = conn.cursor()
+
+        student_email = request.args.get('email')
+        student_password = request.args.get('password')
+        
+
+        select = """ SELECT A.student_id, A.name, A.email
+                        FROM Student AS A 
+                        LEFT JOIN Faces AS B ON A.student_id = B.student_id
+                        WHERE A.email='%s' AND A.password='%s'""" % (student_email, student_password)
+        execute = cursor.execute(select)
+        student_values = cursor.fetchall()
+        
+        print(student_email, student_password, student_values)
+        student_id, student_name, student_email = student_values[0]
 
         # Insert Login Record
         insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
@@ -55,7 +90,7 @@ def login():
     finally:
         cursor.close() 
         conn.close()
-    
+
 # Check if class in an hour
 @app.route('/check', methods=['GET'])
 def check():
@@ -73,7 +108,7 @@ def check():
                     ORDER BY B.dayofweek ASC, B.starttime ASC""" % (student_id, datetime.now().weekday())
         execute = cursor.execute(select)
         student_course_id = cursor.fetchone()
-        print(student_course_id[0])
+        # print(student_course_id[0])
 
         if student_course_id is None:
             cursor.close() 
@@ -189,7 +224,7 @@ def courses():
         conn = mysql.connect()
         cursor =conn.cursor()
         student_id = request.args.get('student_id')
-        print(student_id)
+        # print(student_id)
         # Check student's courses
         select = """SELECT DISTINCT A.course_id, B.course_name, C.schedule, C.classrooms, E.title, E.name, F.dept_name
                     FROM CourseRegistered AS A
@@ -218,7 +253,7 @@ def courses():
         execute = cursor.execute(select)
         timetable = cursor.fetchall()
 
-        print(timetable)
+        # print(timetable)
 
         response = {"message": "Fetch Success",
                     "total_courses": len(timetable),
@@ -301,16 +336,18 @@ def detail():
         cursor.close() 
         conn.close()
 
-@app.route('/logout', methods=['PUT'])
+@app.route('/logout', methods=['POST'])
 def logout():
     student_id = request.args.get('student_id')
     conn = mysql.connect()
     cursor =conn.cursor()
     # Logout Update Database
-    update =  "UPDATE LoginHistory SET logout_datetime=%s WHERE student_id=%s AND logout_datetime IS NULL" % (datetime.now().strftime('%Y-%m-%d %H:%M:%S'), student_id)
+    update =  "UPDATE LoginHistory SET logout_datetime = NOW() WHERE LoginHistory.student_id = '%s' AND LoginHistory.logout_datetime IS NULL" % (student_id)
     cursor.execute(update)
-    update =  "UPDATE LoginHistory SET duration = TIMESTAMPDIFF(SECOND, login_datetime, logout_datetime) WHERE student_id=%s;" % (student_id)
+    conn.commit()
+    update =  "UPDATE LoginHistory SET duration = TIMESTAMPDIFF(SECOND, login_datetime, logout_datetime) WHERE student_id='%s'" % (student_id)
     cursor.execute(update)
+    conn.commit()
 
     return ('', 200)
 

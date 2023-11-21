@@ -41,6 +41,7 @@ CREATE TABLE Student (
   `student_id` VARCHAR(255) NOT NULL, 
   `name` VARCHAR(255) NOT NULL, 
   `email` VARCHAR(255) NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
   PRIMARY KEY (student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -125,13 +126,13 @@ CREATE TABLE Classroom (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 -- Insert data into the Student table
-INSERT INTO Student (student_id, name, email)
+INSERT INTO Student (student_id, name, email, password)
 VALUES
-    ('S001', 'John Doe', 'john@connect.hku.hk'),
-    ('S002', 'Jane Smith', 'jane@connect.hku.hk'),
-    ('S003', 'David Lee', 'david@connect.hku.hk'),
-    ('S004', 'Emily Wang', 'emily@connect.hku.hk'),
-    ('S005', 'Michael Liu', 'michael@connect.hku.hk');
+    ('S001', 'John Doe', 'john@connect.hku.hk', '123'),
+    ('S002', 'Jane Smith', 'jane@connect.hku.hk', '123'),
+    ('S003', 'David Lee', 'david@connect.hku.hk', '123'),
+    ('S004', 'Emily Wang', 'emily@connect.hku.hk', '123'),
+    ('S005', 'Michael Liu', 'michael@connect.hku.hk', '123');
 
 -- Insert data into the Department table
 INSERT INTO Department (dept_id, dept_name)

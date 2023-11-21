@@ -1,5 +1,5 @@
 from datetime import datetime
-# from faces import face_id
+from faces import face_id
 from app import app, mysql
 from flask import Flask, jsonify, flash, request
 from flaskext.mysql import MySQL
@@ -158,22 +158,12 @@ def timetable():
         execute = cursor.execute(select)
         timetable = cursor.fetchall()
 
-        print(timetable)
-
-        present_courses = set()
-        final_timetable = []
-
-        for row in timetable:
-            if row[0] not in present_courses:
-                present_courses.add(row[0])
-                final_timetable.append(row) 
-
         response = {
-            "total_courses" : len(final_timetable),
-            "course_names" : [i[1] for i in final_timetable],
-            "instructor_name" : [i[2] for i in final_timetable],
-            "next_class" : [i[3] for i in final_timetable],
-            "classroom_name" : [i[4] for i in final_timetable]
+            "total_courses" : len(timetable),
+            "course_names" : [i[1] for i in timetable],
+            "instructor_name" : [i[2] for i in timetable],
+            "next_class" : [i[3] for i in timetable],
+            "classroom_name" : [i[4] for i in timetable]
         }
 
         return jsonify(response)
@@ -195,7 +185,8 @@ def detail():
         select = """SELECT A.course_name,
                         GROUP_CONCAT(CONCAT(B.dayofweek, ' (', B.starttime, ' - ', B.endtime, ')') SEPARATOR '; ') AS schedule,
                         GROUP_CONCAT(B.classroom_name SEPARATOR '; ') AS classroom_names,
-                        A.instructor_name, A.instructor_email, A.zoom_link, A.course_message, D.note_files
+                        E.name, E.email, E.office_location, E.title, E.office_hour_start, 
+                        E.office_hour_end, E.office_hour_weekday, E.instructor_message, F.dept_name, A.zoom_link, A.course_message, D.note_files
                     FROM Courses A
                     LEFT JOIN Classroom B ON A.course_id = B.course_id
                     LEFT JOIN (
@@ -204,8 +195,15 @@ def detail():
                         FROM CourseMaterials
                         GROUP BY course_id
                     ) AS D ON A.course_id = D.course_id
-                    WHERE A.course_id = '%s'
-                    GROUP BY A.course_id, A.course_name, A.instructor_name, A.instructor_email, A.zoom_link, A.course_message, D.note_files;
+                    LEFT JOIN (
+                    SELECT *
+                    FROM Instructor I
+                    ) AS E ON A.instructor_id = E.instructor_id
+                    LEFT JOIN ( 
+                    SELECT *
+                    FROM Department 
+                    ) AS F ON A.dept_id = F.dept_id
+                    WHERE A.course_id = '%s';
                 """ % (course_id)
         execute = cursor.execute(select)
         course_detail = cursor.fetchall()
@@ -217,14 +215,21 @@ def detail():
             "classroom_name": course_detail[2],
             "instructor_name": course_detail[3],
             "instructor_email": course_detail[4],
-            "zoom_link": course_detail[5],
-            "course_message": course_detail[6],
-            "notes": course_detail[7]
+            "instructor_office_location": course_detail[5],
+            "instructor_title": course_detail[6],
+            "instructor_office_starttime": course_detail[7],
+            "instructor_office_endtime": course_detail[8],
+            "instructor_office_weekday": course_detail[9],
+            "instructor_message": course_detail[10],
+            "department": course_detail[11],
+            "zoom_link": course_detail[12],
+            "course_message": course_detail[13],
+            "note_files": course_detail[14]
         }
 
         return jsonify(response)
     except Exception as e:
-        print(e)
+        return 
     finally:
         cursor.close() 
         conn.close()

@@ -292,7 +292,7 @@ def detail():
                     LEFT JOIN Classroom B ON A.course_id = B.course_id
                     LEFT JOIN (
                         SELECT course_id,
-                            GROUP_CONCAT(CONCAT(note_title, ':', note_file) SEPARATOR '; ') AS note_files
+                            GROUP_CONCAT(CONCAT(note_title, '|', note_file) SEPARATOR ';') AS note_files
                         FROM CourseMaterials
                         GROUP BY course_id
                     ) AS D ON A.course_id = D.course_id

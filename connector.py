@@ -6,46 +6,55 @@ from flaskext.mysql import MySQL
 
 
 # Find Student Info From Face
-@app.route("/login", methods=['GET'])
+@app.route("/login", methods=['GET', 'POST'])
 def login():
+    
     try:
         conn = mysql.connect()
         cursor =conn.cursor()
-        face = face_id(0)
 
-        if face != "Your face is not recognized":
-            select = """SELECT A.student_id, A.name, A.email
-                        FROM Student AS A 
-                        LEFT JOIN Faces AS B ON A.student_id = B.student_id
-                        WHERE B.face_id='%s' """ % (face)
+        if request.method == 'GET':
+            face = face_id(0)
+
+            if face != "Your face is not recognized":
+                select = """SELECT A.student_id, A.name, A.email
+                            FROM Student AS A 
+                            LEFT JOIN Faces AS B ON A.student_id = B.student_id
+                            WHERE B.face_id='%s' """ % (face)
+                execute = cursor.execute(select)
+                student_values = cursor.fetchall()
+                student_id, student_name, student_email = student_values[0]
+        else:
+
+            select = """ A.student_id, A.name, A.email
+                            FROM Student AS A 
+                            LEFT JOIN Faces AS B ON A.student_id = B.student_id
+                            WHERE A.email='%s' AND A.password='%s'""" % (request.form.get("username"), request.form.get("password"))
             execute = cursor.execute(select)
             student_values = cursor.fetchall()
-            print(student_values)
             student_id, student_name, student_email = student_values[0]
 
-            # Insert Login Record
-            insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
-            val = (student_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), None, None)
-            cursor.execute(insert, val)
-            conn.commit()
+        # Insert Login Record
+        insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
+        val = (student_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), None, None)
+        cursor.execute(insert, val)
+        conn.commit()
 
-            response = {
-                "login": "Successful",
-                "student_id": student_id,
-                "student_name": student_name,
-                "student_email": student_email 
-            }
+        response = {
+            "login": "Successful",
+            "student_id": student_id,
+            "student_name": student_name,
+            "student_email": student_email 
+        }
 
-            return jsonify(response)
-        else:
-            return {"login":"Failed"}
+        return jsonify(response)
+        
     except Exception as e:
         print(e)
+        return {"login":"Failed"}
     finally:
         cursor.close() 
         conn.close()
-    
-
     
 # Check if class in an hour
 @app.route('/check', methods=['GET'])
@@ -174,6 +183,63 @@ def timetable():
         cursor.close() 
         conn.close()
 
+@app.route('/courses', methods=['GET'])
+def courses():
+    try:
+        conn = mysql.connect()
+        cursor =conn.cursor()
+        student_id = request.args.get('student_id')
+        print(student_id)
+        # Check student's courses
+        select = """SELECT DISTINCT A.course_id, B.course_name, C.schedule, C.classrooms, E.title, E.name, F.dept_name
+                    FROM CourseRegistered AS A
+                    LEFT JOIN (
+                        SELECT course_id, course_name, instructor_id, dept_id
+                        FROM Courses
+                    ) AS B ON A.course_id = B.course_id
+                    LEFT JOIN (
+                        SELECT C.course_id, GROUP_CONCAT(CONCAT(C.dayofweek, ' (', C.starttime, '-', C.endtime, ')') SEPARATOR ';') AS schedule,
+                        GROUP_CONCAT(C.classroom_name SEPARATOR '; ') AS classrooms
+                        FROM Classroom AS C
+                        GROUP BY C.course_id
+                    ) AS C ON B.course_id = C.course_id
+                    LEFT JOIN (
+                        SELECT D.course_id, D.startdate, D.enddate 
+                        FROM Classroom AS D
+                    ) AS D ON B.course_id = D.course_id
+                    LEFT JOIN ( 
+                        SELECT * FROM Instructor
+                    ) AS E ON B.instructor_id = E.instructor_id
+                    LEFT JOIN (
+                        SELECT * FROM Department
+                    ) AS F ON B.dept_id = F.dept_id 
+                    WHERE NOW() BETWEEN D.startdate AND D.enddate AND A.student_id = '%s';
+                """ % (student_id)
+        execute = cursor.execute(select)
+        timetable = cursor.fetchall()
+
+        print(timetable)
+
+        response = {"message": "Fetch Success",
+                    "total_courses": len(timetable),
+                    "course_ids": [i[0] for i in timetable],
+                    "course_names": [i[1] for i in timetable],
+                    "course_schedules": [i[2] for i in timetable],
+                    "classroom_names": [i[3] for i in timetable],
+                    "instructor_titles": [i[4] for i in timetable],
+                    "instructor_names": [i[5] for i in timetable],
+                    "departments": [i[6] for i in timetable]}
+
+        return jsonify(response)
+
+    except Exception as e:
+        return jsonify({
+            "message": "Fetch Failed"
+        })
+    finally:
+        cursor.close() 
+        conn.close()
+
 @app.route('/detail', methods=['GET'])
 def detail():
     try:
@@ -183,7 +249,7 @@ def detail():
         course_id = request.args.get('course_id')
         # Get Course Detail
         select = """SELECT A.course_name,
-                        GROUP_CONCAT(CONCAT(B.dayofweek, ' (', B.starttime, ' - ', B.endtime, ')') SEPARATOR '; ') AS schedule,
+                        GROUP_CONCAT(CONCAT(B.dayofweek, ' (', B.starttime, '-', B.endtime, ')') SEPARATOR ';') AS schedule,
                         GROUP_CONCAT(B.classroom_name SEPARATOR '; ') AS classroom_names,
                         E.name, E.email, E.office_location, E.title, E.office_hour_start, 
                         E.office_hour_end, E.office_hour_weekday, E.instructor_message, F.dept_name, A.zoom_link, A.course_message, D.note_files
@@ -210,6 +276,7 @@ def detail():
 
         course_detail = course_detail[0]
         response = {
+            "message": "Fetch Success",
             "course_name": course_detail[0],
             "course_schedule": course_detail[1],
             "classroom_name": course_detail[2],

@@ -9,7 +9,7 @@ mysql = MySQL(app)
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 app.config['MYSQL_DATABASE_PORT'] = 3306
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'justin306'
-app.config['MYSQL_DATABASE_DB'] = 'comp3278'
+app.config['MYSQL_DATABASE_PASSWORD'] = '725Donald725'
+app.config['MYSQL_DATABASE_DB'] = 'FaceRecognition'
 mysql.init_app(app)
 

@@ -58,8 +58,8 @@ CREATE TABLE Instructor (
   `email` VARCHAR(255) NOT NULL,
   `office_location` VARCHAR(30) NOT NULL,
   `title` VARCHAR(5) NOT NULL,
-  `office_hour_start` DATETIME(3) NOT NULL,
-  `office_hour_end` DATETIME(3) NOT NULL,
+  `office_hour_start` DATETIME(2) NOT NULL,
+  `office_hour_end` DATETIME(2) NOT NULL,
   `office_hour_weekday` VARCHAR(10) NOT NULL,
   `instructor_message` VARCHAR(255) NOT NULL,
   PRIMARY KEY (instructor_id),
@@ -74,8 +74,8 @@ CREATE TABLE Faces (
 
 CREATE TABLE LoginHistory (
   `student_id` VARCHAR(255) NOT NULL,
-  `login_datetime` DATETIME(3) NOT NULL,
-  `logout_datetime` DATETIME(3),
+  `login_datetime` DATETIME(2) NOT NULL,
+  `logout_datetime` DATETIME(2),
   `duration` INT,
   FOREIGN KEY (student_id) REFERENCES Student(student_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;

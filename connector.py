@@ -31,11 +31,23 @@ def login():
             cursor.execute(insert, val)
             conn.commit()
 
+
+            select2 = """SELECT login_datetime
+                                FROM LoginHistory 
+                                WHERE student_id='%s'
+                                ORDER BY login_datetime DESC
+                                LIMIT 1
+                    """ % (student_id)
+            execute = cursor.execute(select2)
+            last_login = cursor.fetchall()
+            print(last_login, '------------')
+
             response = {
                 "login": "Successful",
                 "student_id": student_id,
                 "student_name": student_name,
-                "student_email": student_email 
+                "student_email": student_email,
+                "last_login": last_login[0][0].strftime('%d %m %Y %H:%M')
             }
 
             return jsonify(response)
@@ -66,9 +78,17 @@ def login2():
                         WHERE A.email='%s' AND A.password='%s'""" % (student_email, student_password)
         execute = cursor.execute(select)
         student_values = cursor.fetchall()
-        
-        print(student_email, student_password, student_values)
+
         student_id, student_name, student_email = student_values[0]
+
+        select2 = """SELECT login_datetime
+                            FROM LoginHistory 
+                            WHERE student_id='%s'
+                            ORDER BY login_datetime DESC
+                            LIMIT 1
+                """ % (student_id)
+        execute = cursor.execute(select2)
+        last_login = cursor.fetchall()
 
         # Insert Login Record
         insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
@@ -80,7 +100,8 @@ def login2():
             "login": "Successful",
             "student_id": student_id,
             "student_name": student_name,
-            "student_email": student_email 
+            "student_email": student_email,
+            "last_login": last_login[0][0].strftime('%d %m %Y %H:%M')
         }
 
         return jsonify(response)

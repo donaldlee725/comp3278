@@ -22,7 +22,6 @@ def send_email(data: dict):
             ... 
         }
     """ 
-
     receiverAddress = data["receiverAddress"]
     message = """
         \n
@@ -34,7 +33,10 @@ def send_email(data: dict):
         if key == "receiverAddress":
             pass
         else:
-            message += "\t" + key + ": " + value + "\n"
+            if type(value) is not str:
+                message += "\t" + key + ": " + str(value) + "\n"
+            else:
+                message += "\t" + key + ": " + value + "\n"
     
     toaddr = [receiverAddress]
     cc = [receiverAddress]

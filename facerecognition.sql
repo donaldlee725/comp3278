@@ -128,7 +128,7 @@ CREATE TABLE Classroom (
 -- Insert data into the Student table
 INSERT INTO Student (student_id, name, email, password)
 VALUES
-    ('S001', 'John Doe', 'john@connect.hku.hk', '123'),
+    ('S001', 'John Doe', 'justinyimcw@gmail.com', '123'),
     ('S002', 'Jane Smith', 'jane@connect.hku.hk', '123'),
     ('S003', 'David Lee', 'david@connect.hku.hk', '123'),
     ('S004', 'Emily Wang', 'emily@connect.hku.hk', '123'),
@@ -273,7 +273,7 @@ VALUES
 -- Insert data into the Classroom table
 INSERT INTO Classroom (classroom_id, classroom_name, course_id, startdate, enddate, dayofweek, starttime, endtime)
 VALUES
-    ('C001', 'MWT 1', 'COMP3278', '2023-09-01', '2023-11-30', 0, '09:00:00', '10:00:00'),
+    ('C001', 'MWT 1', 'COMP3278', '2023-09-01', '2023-11-30', 2, '16:00:00', '17:00:00'),
     ('C002', 'MWT 2', 'COMP3331', '2023-09-01', '2023-11-30', 2, '09:00:00', '10:00:00'),
     ('C003', 'KK 201', 'COMP3297', '2023-09-01', '2023-11-30', 4, '09:00:00', '10:00:00'),
     ('C004', 'KK 202', 'MATH2014', '2023-09-01', '2023-11-30', 1, '09:00:00', '10:00:00'),

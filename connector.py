@@ -378,14 +378,14 @@ def detail():
 @app.route('/logout', methods=['POST'])
 def logout():
     student_id = request.json['student_id']
-    print(student_id)
+    # print(student_id)
     conn = mysql.connect()
     cursor =conn.cursor()
     # Logout Update Database
     update =  "UPDATE LoginHistory SET logout_datetime = NOW() WHERE LoginHistory.student_id = '%s' AND LoginHistory.logout_datetime IS NULL" % (student_id)
     cursor.execute(update)
     conn.commit()
-    update =  "UPDATE LoginHistory SET duration = TIMESTAMPDIFF(SECOND, login_datetime, logout_datetime) WHERE student_id='%s'" % (student_id)
+    update =  "UPDATE LoginHistory SET duration = TIMESTAMPDIFF(SECOND, login_datetime, logout_datetime) WHERE student_id='%s' AND Duration IS NULL" % (student_id)
     cursor.execute(update)
     conn.commit()
 

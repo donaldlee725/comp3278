@@ -24,12 +24,6 @@ def login():
             execute = cursor.execute(select)
             student_values = cursor.fetchall()
             student_id, student_name, student_email = student_values[0]
-            
-            # Insert Login Record
-            insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
-            val = (student_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), None, None)
-            cursor.execute(insert, val)
-            conn.commit()
 
 
             select2 = """SELECT login_datetime
@@ -40,7 +34,12 @@ def login():
                     """ % (student_id)
             execute = cursor.execute(select2)
             last_login = cursor.fetchall()
-            print(last_login, '------------')
+            
+            # Insert Login Record
+            insert =  "INSERT INTO LoginHistory (student_id, login_datetime, logout_datetime, duration) VALUES (%s, %s, %s, %s)"
+            val = (student_id, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), None, None)
+            cursor.execute(insert, val)
+            conn.commit()
 
             response = {
                 "login": "Successful",

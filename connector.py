@@ -377,7 +377,8 @@ def detail():
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    student_id = request.args.get('student_id')
+    student_id = request.json['student_id']
+    print(student_id)
     conn = mysql.connect()
     cursor =conn.cursor()
     # Logout Update Database

@@ -145,7 +145,7 @@ def check():
 
         execute = cursor.execute(select)
         result = cursor.fetchall()
-        print(result)
+        # print(result)
         course_id, course_name, course_message, zoom_link, starttime, endtime, classroom_name, file_links, dept_id, \
             name, email, office_location, title, office_hour_start, office_hour_end, office_hour_weekday, instructor_message= result[0]
 
@@ -189,38 +189,53 @@ def timetable():
         student_id = request.args.get('student_id')
         print(student_id)
         # Check student's courses
-        select = """SELECT A.course_id, D.course_name, D.instructor_name, D.schedule, D.classroom_name 
+        select = """
+                SELECT A.course_id, B.course_name, C.classroom_name, C.dayofweek, C.starttime, C.endtime
+                FROM (
+                    SELECT A.course_id
                     FROM CourseRegistered AS A
-                    LEFT JOIN (
-                        SELECT B.course_id, B.course_name, B.instructor_name,
-                            GROUP_CONCAT(CONCAT(C.dayofweek, ' (', C.starttime, ' - ', C.endtime, ')') SEPARATOR '; ') AS schedule,
-                            C.startdate, C.enddate, C.classroom_name  
-                        FROM Courses AS B
-                        LEFT JOIN Classroom AS C ON B.course_id = C.course_id
-                        WHERE NOW() BETWEEN C.startdate AND C.enddate 
-                        GROUP BY B.course_id, B.course_name, B.instructor_name, C.dayofweek, C.starttime, C.endtime, C.startdate, C.enddate, C.classroom_name
-                        ORDER BY ABS(C.dayofweek - %s)
-                    ) AS D ON A.course_id = D.course_id 
                     WHERE A.student_id = '%s'
-                """ % (datetime.now().weekday(), student_id)
+                ) AS A
+                LEFT JOIN (
+                    SELECT B.course_id, B.course_name
+                    FROM Courses AS B
+                ) AS B ON A.course_id = B.course_id
+                JOIN (
+                    SELECT C.course_id, C.classroom_name, C.dayofweek, C.starttime, C.endtime, C.startdate, C.enddate 
+                    FROM Classroom AS C
+                    WHERE NOW() BETWEEN C.startdate AND C.enddate 
+                    ORDER BY C.dayofweek
+                ) AS C ON A.course_id = C.course_id
+                """  % (student_id)
+        
         execute = cursor.execute(select)
         timetable = cursor.fetchall()
 
+        # print(timetable)
+
         response = {
+            # course location
+            # course date/ time/ duratoin
+            "message": "Fetch Success",
             "total_courses" : len(timetable),
+            "course_id": [i[0] for i in timetable],
             "course_names" : [i[1] for i in timetable],
-            "instructor_name" : [i[2] for i in timetable],
-            "next_class" : [i[3] for i in timetable],
-            "classroom_name" : [i[4] for i in timetable]
+            "classroom_name" : [i[2] for i in timetable],
+            "dateofweek": [i[3] for i in timetable],
+            "starttime": [str(i[4]) for i in timetable],
+            "endtime" : [str(i[5]) for i in timetable]
         }
 
+        cursor.close() 
+        conn.close()
         return jsonify(response)
 
     except Exception as e:
-        print(e)
-    finally:
         cursor.close() 
         conn.close()
+        return jsonify({
+            "message": f"Error {e}"
+        })
 
 @app.route('/courses', methods=['GET'])
 def courses():
@@ -358,6 +373,7 @@ def logout():
 @app.route('/sendEmail', methods=['POST'])
 def sendEmail():
     send_email(request.get_json())
+    return ('', 200)
 
 if __name__ == '__main__':
     app.run()

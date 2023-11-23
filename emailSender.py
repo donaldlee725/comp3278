@@ -1,16 +1,6 @@
 import smtplib
 import json
 
-def send_email_test():
-    data = {
-        "receiverAddress": "justinyimcw@gmail.com",
-        "course name": "comp3278",
-        "venue": "cym",
-        "time": "Fri 5:30",
-    }
-    send_email(data)
-
-
 def send_email(data: dict):
     """
         data: json and dict type in python
@@ -57,4 +47,3 @@ def send_email(data: dict):
 
     return "Sent email unsuccess"
 
-send_email_test()

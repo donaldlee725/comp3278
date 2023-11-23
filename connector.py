@@ -14,7 +14,7 @@ def login():
         conn = mysql.connect()
         cursor =conn.cursor()
 
-        face = face_id(0)
+        face = face_id(10)
 
         if face != "Your face is not recognized":
             select = """SELECT A.student_id, A.name, A.email
@@ -152,7 +152,7 @@ def check():
                     WHERE B.course_id = '%s' AND B.dayofweek = %s AND NOW() BETWEEN B.startdate AND B.enddate AND ABS(TIMESTAMPDIFF(MINUTE, B.starttime, NOW())) <= 60
                 ) AS B ON A.course_id = B.course_id
                 LEFT JOIN(
-                    SELECT C.course_id, GROUP_CONCAT(C.note_file SEPARATOR '; ') AS file_links
+                    SELECT C.course_id, GROUP_CONCAT(CONCAT(note_title, '|', note_file) SEPARATOR ';') AS file_links
                     FROM CourseMaterials AS C
                     WHERE C.note_date = DATE(NOW())
                     GROUP BY C.course_id
